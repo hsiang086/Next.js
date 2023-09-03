@@ -1,6 +1,7 @@
 "use client";
 
 import { CreateServerModel } from "@/components/models/create-server-model";
+import { InviteModel } from "@/components/models/invite-model";
 import { useEffect, useState } from "react";
 
 export const ModelProvider = () => {
@@ -14,6 +15,7 @@ export const ModelProvider = () => {
     return (
         <>
             <CreateServerModel />
+            <InviteModel />
         </>
     )
 }

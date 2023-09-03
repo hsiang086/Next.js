@@ -4,6 +4,7 @@ import { ServerWithMembersWithProfiles } from "@/types";
 import { MemberRole, Server } from "@prisma/client"
 import { DropdownMenu, DropdownMenuItem, DropdownMenuContent, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { ChevronDown, ChevronDownCircleIcon, LogOut, PlusCircle, Settings, Trash, Trash2, User, UserPlus } from "lucide-react";
+import { useModel } from "@/hooks/use-model-store";
 
 interface ServerSidebarProps {
     server: ServerWithMembersWithProfiles;
@@ -17,6 +18,7 @@ export const ServerHeader = ({
     server: ServerWithMembersWithProfiles;
     role?: MemberRole;
 }) => {
+    const { onOpen } = useModel();
     const isAdmin = role === MemberRole.ADMIN;
     const isModerator = isAdmin || role === MemberRole.MODERATOR;
     return (
@@ -34,7 +36,7 @@ export const ServerHeader = ({
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56 text-xs font-medium text-black dark:text-neutral-500 space-y-[2px]">
                 {isModerator && (
-                    <DropdownMenuItem className="text-indigo-800 dark:text-indigo-300 px-3 py-2 text-sm cursor-pointer">
+                    <DropdownMenuItem onClick={() => onOpen("invite", { server })} className="text-indigo-800 dark:text-indigo-300 px-3 py-2 text-sm cursor-pointer">
                         Invite people
                         <UserPlus className="h-4 w-4 ml-auto"/>
                     </DropdownMenuItem>
