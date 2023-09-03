@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { useParams, useRouter } from "next/navigation";
 import { useModel } from "@/hooks/use-model-store";
 import { ChannelType } from "@prisma/client";
+import { useEffect } from "react";
 
 const formSchema = z.object({
     name: z.string().min(1, {
@@ -46,17 +47,25 @@ const formSchema = z.object({
 });
 
 export const CreateChannelModel = () => {
-    const { isOpen, onClose, type } = useModel();
+    const { isOpen, onClose, type, data } = useModel();
     const router = useRouter();
     const params = useParams();
     const isModelOpen = isOpen && type === "createChannel";
+    const { channelType } = data;
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
             name: "",
-            type: ChannelType.TEXT,
+            type: channelType || ChannelType.TEXT,
         }
     });
+    useEffect(() => {
+        if (channelType) {
+            form.setValue("type", channelType);
+        } else {
+            form.setValue("type", ChannelType.TEXT);
+        }
+    }, [channelType, form])
     const isLoading = form.formState.isSubmitting;
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
@@ -117,7 +126,7 @@ export const CreateChannelModel = () => {
                                 name="type"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>
+                                        <FormLabel className="uppercase text-xs font-bold text-zinc-500 dark:text-secondary/70">
                                             Channel Type
                                         </FormLabel>
                                         <Select disabled={isLoading} onValueChange={field.onChange} defaultValue={field.value}>
