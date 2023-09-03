@@ -3,7 +3,6 @@
 import * as z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
-import { use, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
     Dialog,
@@ -25,6 +24,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 import { useRouter } from "next/navigation";
+import { useModel } from "@/hooks/use-model-store";
+import { useEffect } from "react";
 
 const formSchema = z.object({
     name: z.string().min(1, {
@@ -35,12 +36,11 @@ const formSchema = z.object({
     })
 });
 
-const InitialModel = () => {
-    const [isMounted, setIsMounted] = useState(false);
+export const EditServerModel = () => {
+    const { isOpen, onClose, type, data } = useModel();
     const router = useRouter();
-    useEffect(() => {
-        setIsMounted(true);
-    }, []);
+    const isModelOpen = isOpen && type === "editServer";
+    const { server } = data;
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -48,22 +48,29 @@ const InitialModel = () => {
             imageUrl: ""
         }
     });
+    useEffect(() => {
+        if (server) {
+            form.setValue("name", server.name);
+            form.setValue("imageUrl", server.imageUrl);
+        }
+    }, [server, form])
     const isLoading = form.formState.isSubmitting;
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
-            await axios.post("/api/servers", values);
+            await axios.patch(`/api/servers/${server?.id}`, values);
             form.reset();
             router.refresh();
-            window.location.reload();
+            onClose();
         } catch(error) {
             console.log(error);
         }   
     }
-    if (!isMounted) {
-        return null;
+    const handleClose = () => {
+        form.reset();
+        onClose();
     }
     return (  
-        <Dialog open={ true }>
+        <Dialog open={ isModelOpen } onOpenChange={ handleClose }>
             <DialogContent className="bg-white text-black p-0 overflow-hidden">
                 <DialogHeader className="pt-8 px-6">
                     <DialogTitle className="text-2xl text-center font-bold">
@@ -116,7 +123,7 @@ const InitialModel = () => {
                         </div>
                         <DialogFooter className="bg-gray-100 px-6 py-4">
                             <Button variant={ "primary" } disabled={ isLoading }>
-                                Create
+                                Save
                             </Button>
                         </DialogFooter>
                     </form>
@@ -126,4 +133,3 @@ const InitialModel = () => {
     );
 }
  
-export default InitialModel;   
